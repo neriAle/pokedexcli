@@ -13,12 +13,19 @@ type cliCommand struct {
 	callback    func() error
 }
 
-var commands map[string]cliCommand = map[string]cliCommand{
-    "exit": {
-        name:        "exit",
-        description: "Exit the Pokedex",
-        callback:    commandExit,
-    },
+func getCommands() map[string]cliCommand {
+	return map[string]cliCommand{
+		"help": {
+			name:        "help",
+			description: "Displays a help message",
+			callback:    commandHelp,
+		},
+		"exit": {
+			name:        "exit",
+			description: "Exit the Pokedex",
+			callback:    commandExit,
+		},
+	}
 }
 
 func startREPL() {
@@ -32,7 +39,7 @@ func startREPL() {
 			continue
 		}
 
-		cmd, ok := commands[cleanText[0]]
+		cmd, ok := getCommands()[cleanText[0]]
 		if !ok {
 			fmt.Println("Unknown command")
 			continue
@@ -43,12 +50,6 @@ func startREPL() {
 			fmt.Println(err)
 		}
 	}
-}
-
-func commandExit() error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-	return nil
 }
 
 func cleanInput(text string) []string {
