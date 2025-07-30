@@ -36,3 +36,24 @@ func commandMap(c *Config) error {
 	}
 	return nil
 }
+
+func commandMapb(c *Config) error {
+	// If we are on the first page, just print it and exit
+	if c.Previous_area == "" {
+		fmt.Println("you're on the first page")
+		return nil
+	}
+
+	areas, prev, next, err := pokeapi.Get_location_areas(c.Next_area, c.Previous_area)
+	if err != nil {
+		return err
+	}
+
+	c.Previous_area = prev
+	c.Next_area = next
+
+	for _, a := range areas {
+		fmt.Println(a)
+	}
+	return nil
+}
