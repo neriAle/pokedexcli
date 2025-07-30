@@ -7,10 +7,15 @@ import(
 	"strings"
 )
 
+type Config struct {
+	Next_area 		string
+	Previous_area 	string
+}
+
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*Config) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -19,6 +24,11 @@ func getCommands() map[string]cliCommand {
 			name:        "help",
 			description: "Displays a help message",
 			callback:    commandHelp,
+		},
+		"map": {
+			name:        "map",
+			description: "Displays the next 20 location areas in the Pokemon world",
+			callback:    commandMap,
 		},
 		"exit": {
 			name:        "exit",
@@ -30,6 +40,7 @@ func getCommands() map[string]cliCommand {
 
 func startREPL() {
 	reader := bufio.NewScanner(os.Stdin)
+	conf := Config{}
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
@@ -45,7 +56,7 @@ func startREPL() {
 			continue
 		}
 
-		err := cmd.callback()
+		err := cmd.callback(&conf)
 		if err != nil {
 			fmt.Println(err)
 		}
