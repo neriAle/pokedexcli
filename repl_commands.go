@@ -3,7 +3,7 @@ package main
 import(
 	"fmt"
 	"os"
-	"github.com/neriAle/pokedexcli/pokeapi"
+	"github.com/neriAle/pokedexcli/internal/pokeapi"
 )
 
 func commandExit(c *Config) error {
