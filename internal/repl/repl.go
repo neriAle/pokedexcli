@@ -17,7 +17,7 @@ type Config struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*Config, *pokecache.Cache) error
+	callback    func(*Config, *pokecache.Cache, ...string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -64,7 +64,7 @@ func StartREPL() {
 			continue
 		}
 
-		err := cmd.callback(&conf, cache)
+		err := cmd.callback(&conf, cache, cleanText[1:]...)
 		if err != nil {
 			fmt.Println(err)
 		}

@@ -8,13 +8,13 @@ import(
 	"os"
 )
 
-func commandExit(c *Config, cache *pokecache.Cache) error {
+func commandExit(c *Config, cache *pokecache.Cache, args ...string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(c *Config, cache *pokecache.Cache) error {
+func commandHelp(c *Config, cache *pokecache.Cache, args ...string) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Print("usage:\n\n")
 
@@ -24,7 +24,7 @@ func commandHelp(c *Config, cache *pokecache.Cache) error {
 	return nil
 }
 
-func commandMap(c *Config, cache *pokecache.Cache) error {
+func commandMap(c *Config, cache *pokecache.Cache, args ...string) error {
 	// areas, prev, next, err := pokeapi.Get_location_areas(c.Previous_area, c.Next_area)
 	var url string
 	if c.Next_area == "" {
@@ -70,7 +70,7 @@ func commandMap(c *Config, cache *pokecache.Cache) error {
 	return nil
 }
 
-func commandMapb(c *Config, cache *pokecache.Cache) error {
+func commandMapb(c *Config, cache *pokecache.Cache, args ...string) error {
 	// If we are on the first page, just print it and exit
 	if c.Previous_area == "" {
 		fmt.Println("you're on the first page")
