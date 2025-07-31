@@ -19,7 +19,7 @@ func commandHelp(c *Config, cache *pokecache.Cache, args ...string) error {
 	fmt.Print("usage:\n\n")
 
 	for _, v := range getCommands() {
-		fmt.Printf("%s:\t%s\n", v.name, v.description)
+		fmt.Printf("%-20s: %s\n", v.name, v.description)
 	}
 	return nil
 }
@@ -64,6 +64,7 @@ func commandMap(c *Config, cache *pokecache.Cache, args ...string) error {
 		c.Previous_area = ""
 	}
 
+	// Print the results
 	for _, a := range locations.Results {
 		fmt.Println(a.Name)
 	}
@@ -109,8 +110,55 @@ func commandMapb(c *Config, cache *pokecache.Cache, args ...string) error {
 		c.Previous_area = ""
 	}
 
+	// Print the results
 	for _, a := range locations.Results {
 		fmt.Println(a.Name)
+	}
+	return nil
+}
+
+func commandExplore(c *Config, cache *pokecache.Cache, args ...string) error {
+	// If no argument has been passed, ask the user to input one
+	if len(args) < 1 {
+		fmt.Println("Please insert an area to explore")
+		return nil
+	}
+	url := "https://pokeapi.co/api/v2/location-area/" + args[0]
+
+	fmt.Printf("Exploring %s...\n", args[0])
+
+	var data []byte
+	// Check if the value at this url is already in the cache
+	value, ok := cache.Get(url)
+	if ok {
+		data = value
+	} else {
+		val, err := pokeapi.Get_api_data(url)
+		if err != nil {
+			return err
+		}
+		data = val
+		cache.Add(url, data)
+	}
+
+	// Unmarshal the data into a Location_Areas struct
+	var location = pokeapi.Location_Details{}
+	err := json.Unmarshal(data, &location)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling the location areas: %w", err)
+	}
+
+	// If no pokemon can be encountered in this area, print a message
+	if len(location.PokemonEncounters) < 1 {
+		fmt.Println("No pokemon can be encountered in this area")
+		return nil
+	}
+
+	fmt.Println("Found Pokemon:")
+
+	// Print the results
+	for _, pe := range location.PokemonEncounters {
+		fmt.Printf(" - %s\n", pe.Pokemon.Name)
 	}
 	return nil
 }
