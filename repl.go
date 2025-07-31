@@ -3,8 +3,10 @@ package main
 import(
 	"bufio"
 	"fmt"
+	"github.com/neriAle/pokedexcli/internal/pokecache"
 	"os"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -15,7 +17,7 @@ type Config struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*Config) error
+	callback    func(*Config, *pokecache.Cache) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -46,6 +48,7 @@ func getCommands() map[string]cliCommand {
 func startREPL() {
 	reader := bufio.NewScanner(os.Stdin)
 	conf := Config{}
+	cache := pokecache.NewCache(15 * time.Second)
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
@@ -61,7 +64,7 @@ func startREPL() {
 			continue
 		}
 
-		err := cmd.callback(&conf)
+		err := cmd.callback(&conf, cache)
 		if err != nil {
 			fmt.Println(err)
 		}
