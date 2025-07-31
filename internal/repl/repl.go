@@ -1,4 +1,4 @@
-package main
+package repl
 
 import(
 	"bufio"
@@ -45,7 +45,7 @@ func getCommands() map[string]cliCommand {
 	}
 }
 
-func startREPL() {
+func StartREPL() {
 	reader := bufio.NewScanner(os.Stdin)
 	conf := Config{}
 	cache := pokecache.NewCache(15 * time.Second)
