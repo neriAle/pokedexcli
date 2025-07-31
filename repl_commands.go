@@ -1,20 +1,22 @@
 package main
 
 import(
+	"encoding/json"
 	"fmt"
-	"os"
 	"github.com/neriAle/pokedexcli/internal/pokeapi"
+	"github.com/neriAle/pokedexcli/internal/pokecache"
+	"os"
 )
 
-func commandExit(c *Config) error {
+func commandExit(c *Config, cache *pokecache.Cache) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(c *Config) error {
+func commandHelp(c *Config, cache *pokecache.Cache) error {
 	fmt.Println("Welcome to the Pokedex!")
-	fmt.Println("usage:\n")
+	fmt.Print("usage:\n\n")
 
 	for _, v := range getCommands() {
 		fmt.Printf("%s:\t%s\n", v.name, v.description)
@@ -22,38 +24,93 @@ func commandHelp(c *Config) error {
 	return nil
 }
 
-func commandMap(c *Config) error {
-	areas, prev, next, err := pokeapi.Get_location_areas(c.Previous_area, c.Next_area)
-	if err != nil {
-		return err
+func commandMap(c *Config, cache *pokecache.Cache) error {
+	// areas, prev, next, err := pokeapi.Get_location_areas(c.Previous_area, c.Next_area)
+	var url string
+	if c.Next_area == "" {
+		url = "https://pokeapi.co/api/v2/location-area/"
+	} else {
+		url = c.Next_area
 	}
 
-	c.Previous_area = prev
-	c.Next_area = next
+	var data []byte
+	// Check if the value at this url is already in the cache
+	value, ok := cache.Get(url)
+	if ok {
+		data = value
+	} else {
+		val, err := pokeapi.Get_api_data(url)
+		if err != nil {
+			return err
+		}
+		data = val
+		cache.Add(url, data)
+	}
 
-	for _, a := range areas {
-		fmt.Println(a)
+	// Unmarshal the data into a Location_Areas struct
+	var locations = pokeapi.Location_Areas{}
+	err := json.Unmarshal(data, &locations)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling the location areas: %w", err)
+	}
+
+	// Update the next and previous location of the config struct
+	if locations.Next != nil {
+		c.Next_area = *locations.Next
+	}
+	if locations.Previous != nil {
+		c.Previous_area = *locations.Previous
+	} else {
+		c.Previous_area = ""
+	}
+
+	for _, a := range locations.Results {
+		fmt.Println(a.Name)
 	}
 	return nil
 }
 
-func commandMapb(c *Config) error {
+func commandMapb(c *Config, cache *pokecache.Cache) error {
 	// If we are on the first page, just print it and exit
 	if c.Previous_area == "" {
 		fmt.Println("you're on the first page")
 		return nil
 	}
+	url := c.Previous_area
 
-	areas, prev, next, err := pokeapi.Get_location_areas(c.Next_area, c.Previous_area)
-	if err != nil {
-		return err
+	var data []byte
+	// Check if the value at this url is already in the cache
+	value, ok := cache.Get(url)
+	if ok {
+		data = value
+	} else {
+		val, err := pokeapi.Get_api_data(url)
+		if err != nil {
+			return err
+		}
+		data = val
+		cache.Add(url, data)
 	}
 
-	c.Previous_area = prev
-	c.Next_area = next
+	// Unmarshal the data into a Location_Areas struct
+	var locations = pokeapi.Location_Areas{}
+	err := json.Unmarshal(data, &locations)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling the location areas: %w", err)
+	}
 
-	for _, a := range areas {
-		fmt.Println(a)
+	// Update the next and previous location of the config struct
+	if locations.Next != nil {
+		c.Next_area = *locations.Next
+	}
+	if locations.Previous != nil {
+		c.Previous_area = *locations.Previous
+	} else {
+		c.Previous_area = ""
+	}
+
+	for _, a := range locations.Results {
+		fmt.Println(a.Name)
 	}
 	return nil
 }
