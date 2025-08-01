@@ -5,6 +5,7 @@ import(
 	"fmt"
 	"github.com/neriAle/pokedexcli/internal/pokeapi"
 	"github.com/neriAle/pokedexcli/internal/pokecache"
+	"math/rand"
 	"os"
 )
 
@@ -135,7 +136,7 @@ func commandExplore(c *Config, cache *pokecache.Cache, args ...string) error {
 	} else {
 		val, err := pokeapi.Get_api_data(url)
 		if err != nil {
-			return err
+			return fmt.Errorf("Not a valid location area, %w", err)
 		}
 		data = val
 		cache.Add(url, data)
@@ -160,5 +161,54 @@ func commandExplore(c *Config, cache *pokecache.Cache, args ...string) error {
 	for _, pe := range location.PokemonEncounters {
 		fmt.Printf(" - %s\n", pe.Pokemon.Name)
 	}
+	return nil
+}
+
+func commandCatch(c *Config, cache *pokecache.Cache, args ...string) error {
+	// If no argument has been passed, ask the user to input one
+	if len(args) < 1 {
+		fmt.Println("Please insert the name of a pokemon to catch")
+		return nil
+	}
+	pokemon_name := args[0]
+	url := "https://pokeapi.co/api/v2/pokemon/" + pokemon_name
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon_name)
+
+	var data []byte
+	// Check if the value at this url is already in the cache
+	value, ok := cache.Get(url)
+	if ok {
+		data = value
+	} else {
+		val, err := pokeapi.Get_api_data(url)
+		if err != nil {
+			return fmt.Errorf("Not a valid pokemon name, %w", err)
+		}
+		data = val
+		cache.Add(url, data)
+	}
+
+	// Unmarshal data into a Pokemon struct
+	var pkmn = pokeapi.Pokemon{}
+	err := json.Unmarshal(data, &pkmn)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling the location areas: %w", err)
+	}
+
+	baseExp := pkmn.BaseExperience
+	if baseExp > 350 {
+		baseExp = 350
+	}
+	chance := rand.Intn(400)
+
+	// If the random chance is higher than the base experience of the pokemon, catch it and add it to the pokedex
+	if chance > baseExp {
+		fmt.Printf("%s was caught!\n", pokemon_name)
+		c.Pokedex[pokemon_name] = pkmn
+	} else {
+		fmt.Printf("%s escaped!\n", pokemon_name)
+	}
+
 	return nil
 }

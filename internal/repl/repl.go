@@ -3,6 +3,7 @@ package repl
 import(
 	"bufio"
 	"fmt"
+	"github.com/neriAle/pokedexcli/internal/pokeapi"
 	"github.com/neriAle/pokedexcli/internal/pokecache"
 	"os"
 	"strings"
@@ -12,6 +13,7 @@ import(
 type Config struct {
 	Next_area 		string
 	Previous_area 	string
+	Pokedex			map[string]pokeapi.Pokemon
 }
 
 type cliCommand struct {
@@ -42,6 +44,11 @@ func getCommands() map[string]cliCommand {
 			description: "Displays the Pokemons that can be encountered in <area_name>",
 			callback:    commandExplore,
 		},
+		"catch": {
+			name:        "catch <pokemon>",
+			description: "Tries to catch <pokemon>, if caught it will register its data in the pokedex",
+			callback:    commandCatch,
+		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
@@ -54,6 +61,8 @@ func StartREPL() {
 	reader := bufio.NewScanner(os.Stdin)
 	conf := Config{}
 	cache := pokecache.NewCache(15 * time.Second)
+	// Can be substituted with reading from file, to save progress across sessions
+	conf.Pokedex = map[string]pokeapi.Pokemon{}
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
