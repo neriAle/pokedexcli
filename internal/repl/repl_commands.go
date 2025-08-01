@@ -212,3 +212,30 @@ func commandCatch(c *Config, cache *pokecache.Cache, args ...string) error {
 
 	return nil
 }
+
+func commandInspect(c *Config, cache *pokecache.Cache, args ...string) error {
+	// If no argument has been passed, ask the user to input one
+	if len(args) < 1 {
+		fmt.Println("Please insert the name of a pokemon to inspect")
+		return nil
+	}
+	pokemon_name := args[0]
+
+	pkmn, caught := c.Pokedex[pokemon_name]
+	if !caught {
+		fmt.Println("you have not caught that pokemon")
+		return nil
+	}
+
+	details := fmt.Sprintf("\nName: %s\nHeight: %d\nWeight: %d\n", pkmn.Name, pkmn.Height, pkmn.Weight)
+	stats := fmt.Sprintf("Stats:\n\t- hp: %d\n\t- attack: %d\n\t- defense: %d\n\t- special-attack: %d\n\t- special-defense: %d\n\t- speed: %d\n", 
+		pkmn.Stats[0].BaseStat, pkmn.Stats[1].BaseStat, pkmn.Stats[2].BaseStat, pkmn.Stats[3].BaseStat, pkmn.Stats[4].BaseStat, pkmn.Stats[5].BaseStat)
+	types := "Types:\n"
+	for i := range pkmn.Types {
+		types = types + fmt.Sprintf("\t- %s\n", pkmn.Types[i].Type.Name)
+	}
+
+	final_string := details + stats + types
+	fmt.Println(final_string)
+	return nil
+}
