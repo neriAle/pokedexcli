@@ -205,6 +205,7 @@ func commandCatch(c *Config, cache *pokecache.Cache, args ...string) error {
 	// If the random chance is higher than the base experience of the pokemon, catch it and add it to the pokedex
 	if chance > baseExp {
 		fmt.Printf("%s was caught!\n", pokemon_name)
+		fmt.Printf("You may now inspect it with the inspect command.\n")
 		c.Pokedex[pokemon_name] = pkmn
 	} else {
 		fmt.Printf("%s escaped!\n", pokemon_name)
@@ -237,5 +238,19 @@ func commandInspect(c *Config, cache *pokecache.Cache, args ...string) error {
 
 	final_string := details + stats + types
 	fmt.Println(final_string)
+	return nil
+}
+
+func commandPokedex(c *Config, cache *pokecache.Cache, args ...string) error {
+	if len(c.Pokedex) < 1 {
+		fmt.Println("You have not caught any pokemon yet!")
+		return nil
+	}
+
+	fmt.Println("Your Pokedex:")
+	for k, _ := range c.Pokedex {
+		fmt.Printf("\t- %s\n", k)
+	}
+
 	return nil
 }
